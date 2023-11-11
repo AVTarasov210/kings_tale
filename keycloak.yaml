@@ -1,0 +1,74 @@
+kubectl --namespace default apply -f - <<< '
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: keycloak
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: default
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: playaru/keycloak-russian
+          args: [ "start" ]
+          env:
+            - name: KC_HOSTNAME_URL
+              value: "https://mapgramm.ru"
+            - name: KC_HOSTNAME_ADMIN_URL
+              value: "https://mapgramm.ru"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KEYCLOAK_ADMIN
+              value: "keycloak"
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: "keycloak"
+            - name: KC_PROXY
+              value: "edge"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_URL
+              value: ""
+            - name: KC_DB_URL_DATABASE
+              value: "keycloak"
+            - name: KC_DB_USERNAME
+              value: ""
+            - name: KC_DB_PASSWORD
+              value: ""
+            - name: KC_FEATURES
+              value: "docker"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080
+  '

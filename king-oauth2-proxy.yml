@@ -23,20 +23,28 @@ spec:
             - containerPort: 4180
               protocol: TCP
           args:
-            - --provider=github
-            - --email-domain=*
+            - --provider=keycloak-oidc
             - --upstream=file:///dev/null
             - --http-address=0.0.0.0:4180
-            - --scope=user:email
+            - --whitelist-domain=mapgramm.ru
+            - --cookie-domain=mapgramm.ru
+            - --skip-provider-button=false
             - --set-xauthrequest=true
+            - --reverse-proxy=true
+            - --skip-jwt-bearer-tokens=true
             - --set-authorization-header=true
+            - --oidc-issuer-url=https://mapgramm.ru/realms/mapgramm
+            - --ssl-insecure-skip-verify=true
+            - --login-url=https://mapgramm.ru/realms/mapgramm/protocol/openid-connect/auth
+            - --silence-ping-logging=true
+            - --email-domain=*
           env:
             - name: OAUTH2_PROXY_CLIENT_ID
-              value: acb0636a63a40efab6df
+              value: ingress
             - name: OAUTH2_PROXY_CLIENT_SECRET
-              value: 547bf2f2093533a296c7fca9aa342bf84e63d0ef
+              value: adFpPx9GZ5xhauDT7aD4e11yCWVTzOsX
             - name: OAUTH2_PROXY_COOKIE_SECRET
-              value: 5Pf0nzUOnV6syd0e0JAkmw==
+              value: zTBum01F+fZmVntQutehXw==
 ---
 apiVersion: v1
 kind: Service
