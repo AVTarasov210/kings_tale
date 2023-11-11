@@ -1,0 +1,76 @@
+kubectl --namespace default apply -f - <<< '
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: king-oauth2-proxy
+  name: king-oauth2-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: king-oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: king-oauth2-proxy
+    spec:
+      containers:
+        - name: king-oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4180
+              protocol: TCP
+          args:
+            - --provider=github
+            - --email-domain=*
+            - --upstream=file:///dev/null
+            - --http-address=0.0.0.0:4180
+            - --scope=user:email
+            - --set-xauthrequest=true
+            - --set-authorization-header=true
+          env:
+            - name: OAUTH2_PROXY_CLIENT_ID
+              value: acb0636a63a40efab6df
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              value: 547bf2f2093533a296c7fca9aa342bf84e63d0ef
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              value: 5Pf0nzUOnV6syd0e0JAkmw==
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: king-oauth2-proxy
+  name: king-oauth2-proxy
+spec:
+  ports:
+    - name: http
+      port: 4180
+      protocol: TCP
+      targetPort: 4180
+  selector:
+    app: king-oauth2-proxy
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-king-oauth2-proxy
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+spec:
+  rules:
+    - host: mapgramm.ru
+      http:
+        paths:
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: king-oauth2-proxy
+                port:
+                  number: 4180
+  ingressClassName: nginx
+'
