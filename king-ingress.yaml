@@ -1,0 +1,19 @@
+kubectl --namespace default apply -f - <<< '
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: king-ingress
+spec:
+  rules:
+    - host: mapgramm.ru
+      http:
+        paths:
+          - path: /king
+            pathType: Prefix
+            backend:
+              service:
+                name: king
+                port:
+                  number: 80
+  ingressClassName: nginx
+'
