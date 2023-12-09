@@ -71,4 +71,58 @@ spec:
             httpGet:
               path: /realms/master
               port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-test
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    #    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
+spec:
+  tls:
+    - hosts:
+        - mapgramm.ru
+      secretName: k8s-secret
+  ingressClassName: nginx
+  rules:
+    - host: mapgramm.ru
+      http:
+        paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
+          - path: /realms/
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
+          - path: /resources/
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
+          - path: /robots.txt
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
+          - path: /js/
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
   '
